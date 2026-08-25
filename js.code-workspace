@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "../js"
+		},
+		{
+			"path": "../react/learn-react"
+		},
+		{
+			"path": "../social-media-react"
+		},
+		{
+			"path": "../frontenttest"
+		},
+		{
+			"path": "../Nepal Hands/NepalHands-frontend"
+		}
+	],
+	"settings": {
+		"terminal.integrated.cwd": "E:\\Nepal Hands\\NepalHands-frontend\\connect-nepal-now",
+		"typescript.tsdk": "social-media-react\\node_modules\\typescript\\lib"
+	}
+}
