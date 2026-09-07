@@ -2,9 +2,7 @@ import { Router } from "express";
 
 import {
   getUsers,
-  deleteUser,
-  updateCurrentUser,
-  getCurrentUser
+  deleteUser
 } from "../controllers/user.controller.js";
 
 import {
@@ -14,26 +12,18 @@ import {
 
 const router = Router();
 
-
 router.get(
-  "/me",
+  "/users",
   authenticate,
-  getCurrentUser
-);
-
-router.get(
-  "/",
-  authenticate,
+  adminOnly,
   getUsers
 );
 
-
-router.put(
-  "/me",
+router.delete(
+  "/:id",
   authenticate,
-  updateCurrentUser
+  adminOnly,
+  deleteUser
 );
-
-
 
 export default router;

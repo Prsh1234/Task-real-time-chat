@@ -5,12 +5,14 @@ import app from "./app.js";
 import { connectDB } from "./config/db.js";
 import { initializeSocket } from "./socket/socket.js";
 import { seedAdmin } from "./config/seedAdmin.js";
+import { connectRedis } from "./config/redis.js";
 
 const PORT = process.env.PORT;
 
 const startServer = async () => {
   await connectDB();
-    await seedAdmin();
+  await seedAdmin();
+  await connectRedis();
   const httpServer = http.createServer(app);
 
   initializeSocket(httpServer);

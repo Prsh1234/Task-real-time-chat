@@ -34,7 +34,7 @@ export const authenticate = async (
         message: "User not found"
       });
     }
-
+    // console.log(user);
     req.user = user;
 
     next();

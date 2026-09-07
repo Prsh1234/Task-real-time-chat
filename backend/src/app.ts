@@ -4,6 +4,8 @@ import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
+import privateChatRoutes from "./routes/privateChat.routes.js";
 
 const app = express();
 
@@ -22,8 +24,13 @@ app.get("/", (req, res) => {
   });
 });
 
+app.use("/api/admin", adminRoutes)
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/chat", chatRoutes);
+app.use(
+  "/api/private-chat",
+  privateChatRoutes
+);
 
 export default app;

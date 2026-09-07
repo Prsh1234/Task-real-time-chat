@@ -3,11 +3,14 @@ import { Server as HttpServer } from "http";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Message from "../models/Message.js";
+import PrivateMessage from "../models/PrivateMessage.js";
 
 interface SocketUser {
   id: string;
   name: string;
 }
+
+
 
 export const initializeSocket = (
   httpServer: HttpServer
@@ -58,6 +61,8 @@ export const initializeSocket = (
 
     console.log(`${user.name} connected`);
 
+
+    //community chat
     socket.broadcast.emit("user_join", {
       id: user.id,
       name: user.name
@@ -121,7 +126,119 @@ export const initializeSocket = (
         id: user.id,
       });
     });
+
+
+
+
+    // Private Chat
+    socket.on(
+      "join_private_chat",
+      (otherUserId: string) => {
+        const currentUserId =
+          socket.data.user.id;
+        console.log(currentUserId,otherUserId);
+
+        const roomId = getPrivateRoomId(
+          currentUserId,
+          otherUserId
+        );
+        console.log(currentUserId,otherUserId);
+        socket.join(roomId);
+      }
+    );
+
+    socket.on(
+      "private_message",
+      async (data: {
+        receiverId: string;
+        message: string;
+      }) => {
+        try {
+          const user = socket.data.user;
+
+          const messageText =
+            data.message.trim();
+
+          if (!messageText) {
+            return;
+          }
+
+          const privateMessage =
+            await PrivateMessage.create({
+              sender: user.id,
+              receiver: data.receiverId,
+              senderName: user.name,
+              message: messageText,
+            });
+
+          const roomId = getPrivateRoomId(
+            user.id,
+            data.receiverId
+          );
+
+          io.to(roomId).emit(
+            "private_message",
+            privateMessage
+          );
+        } catch (error) {
+          console.error(
+            "Private message error:",
+            error
+          );
+        }
+      }
+    );
+
+    socket.on(
+      "private_typing",
+      ({ receiverId }) => {
+        const user =
+          socket.data.user;
+
+        const roomId = getPrivateRoomId(
+          user.id,
+          receiverId
+        );
+
+        socket.to(roomId).emit(
+          "private_typing",
+          {
+            id: user.id,
+            name: user.name,
+          }
+        );
+      }
+    );
+    socket.on(
+      "private_stop_typing",
+      ({ receiverId }) => {
+        const user =
+          socket.data.user;
+
+        const roomId = getPrivateRoomId(
+          user.id,
+          receiverId
+        );
+
+        socket.to(roomId).emit(
+          "private_stop_typing",
+          {
+            id: user.id,
+          }
+        );
+      }
+    );
   });
 
   return io;
+};
+
+
+const getPrivateRoomId = (
+  userId1: string,
+  userId2: string
+) => {
+  return [userId1, userId2]
+    .sort()
+    .join("_");
 };
