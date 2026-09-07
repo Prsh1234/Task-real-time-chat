@@ -102,8 +102,7 @@ export default function Auth() {
       return;
     }
 
-    navigate("/chat");
-        navigate("/chat");
+    navigate("/home");
       } else {
         await api.post("/auth/register", {
           name: form.name,

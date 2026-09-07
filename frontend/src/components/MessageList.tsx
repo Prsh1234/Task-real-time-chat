@@ -291,11 +291,12 @@ export default function MessageList({
                       : "items-start"
                       }`}
                   >
-                    {!own && (
-                      <p className="mb-1 ml-1 text-xs font-medium text-slate-500">
-                        {message.senderName}
-                      </p>
-                    )}
+                    <p
+                      className={`mb-1 text-xs font-medium text-slate-500 ${own ? "mr-1 text-right" : "ml-1"
+                        }`}
+                    >
+                      {message.senderName}
+                    </p>
 
                     <div
                       className={`rounded-2xl px-4 py-2.5 shadow-sm ${own

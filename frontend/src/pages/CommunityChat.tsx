@@ -33,7 +33,7 @@ export default function Chat() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
-    navigate("/auth");
+    navigate("/");
   };
   const currentUser = JSON.parse(
     localStorage.getItem("user") || "{}"

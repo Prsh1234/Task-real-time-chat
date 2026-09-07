@@ -10,7 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import {
-  getUsers,
+  getAdminUsers,
   deleteUser,
   type User,
 } from "../api/user.api";
@@ -33,7 +33,7 @@ const AdminUsers = () => {
       setLoading(true);
       setError("");
 
-      const data = await getUsers();
+      const data = await getAdminUsers();
 
       setUsers(data);
     } catch (error: any) {
@@ -90,7 +90,7 @@ const AdminUsers = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
-    navigate("/auth", { replace: true });
+    navigate("/", { replace: true });
   };
 
   if (loading) {

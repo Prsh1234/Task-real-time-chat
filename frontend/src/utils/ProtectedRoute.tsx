@@ -15,11 +15,11 @@ const ProtectedRoute = ({
   );  
   const role=user?.role;
   if (!token) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (role !== allowedRole) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

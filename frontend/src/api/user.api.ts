@@ -9,6 +9,12 @@ export interface User {
   updatedAt: string;
 }
 
+export const getAdminUsers = async (): Promise<User[]> => {
+  const response = await api.get<User[]>("/admin/users");
+
+  return response.data;
+};
+
 export const getUsers = async (): Promise<User[]> => {
   const response = await api.get<User[]>("/users");
 
@@ -19,7 +25,7 @@ export const deleteUser = async (
   userId: string
 ): Promise<{ message: string }> => {
   const response = await api.delete<{ message: string }>(
-    `/users/${userId}`
+    `admin/users/${userId}`
   );
 
   return response.data;
