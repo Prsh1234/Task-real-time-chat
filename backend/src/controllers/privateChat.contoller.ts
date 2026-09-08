@@ -121,19 +121,3 @@ console.log(`[messages] source=mongodb user=${currentUserId} other=${otherUserId
     });
   }
 };
-
-
-// 1) "private_chat:6a9cfdd6cfdbc1b6fc93cf49_6a9e7cd39804963769f40427"
-// 2) "private_chat:6a8d8bdad03ef477d85e2e2e_6a8da147451dfc9c97baed00"
-// 3) "private_chat:6a8da147451dfc9c97baed00_6a9cfdd6cfdbc1b6fc93cf49"
-// 4) "private_chat:6a8d7d68777b181736afb055_6a8da147451dfc9c97baed00"
-// 5) "private_chat:6a8da147451dfc9c97baed00_6a9e7cd39804963769f40427"
-// 6) "private_chat:6a8d7d68777b181736afb055_6a9cfdd6cfdbc1b6fc93cf49"
-
-
-// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a9cfdd6cfdbc1b6fc93cf49_6a9e7cd39804963769f40427" 0 -1 WITHSCORES
-// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a8d8bdad03ef477d85e2e2e_6a8da147451dfc9c97baed00" 0 -1 WITHSCORES
-// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a8da147451dfc9c97baed00_6a9cfdd6cfdbc1b6fc93cf49" 0 -1 WITHSCORES
-// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a8d7d68777b181736afb055_6a8da147451dfc9c97baed00" 0 -1 WITHSCORES
-// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a8da147451dfc9c97baed00_6a9e7cd39804963769f40427" 0 -1 WITHSCORES
-// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a8d7d68777b181736afb055_6a9cfdd6cfdbc1b6fc93cf49" 0 -1 WITHSCORES
