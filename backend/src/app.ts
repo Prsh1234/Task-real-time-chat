@@ -6,6 +6,7 @@ import userRoutes from "./routes/user.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import privateChatRoutes from "./routes/privateChat.routes.js";
+import privateMessageRoutes from "./routes/privateMessage.routes.js";
 
 const app = express();
 
@@ -32,5 +33,8 @@ app.use(
   "/api/private-chat",
   privateChatRoutes
 );
-
+app.use(
+  "/api/private/messages",
+  privateMessageRoutes
+);
 export default app;

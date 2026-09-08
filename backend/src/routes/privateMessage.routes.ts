@@ -10,15 +10,10 @@ import {
 
 const router = Router();
 
-// router.get(
-//   "/:userId/messages",
-//   authenticate,
-//   getPrivateMessages
-// );
-// router.get(
-//   "/:userId",
-//   authenticate,
-//   getPrivateMessages
-// );
+router.get<{ userId: string }>(
+  "/:userId",
+  authenticate,
+  getPrivateMessages
+);
 
 export default router;

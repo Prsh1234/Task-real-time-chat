@@ -16,6 +16,7 @@ import ChatInput from "../components/ChatInput";
 
 import type { Message, ChatStats } from "../types";
 import { useNavigate } from "react-router-dom";
+import ChatPageHeader from "../components/ChatPageHeader";
 
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -205,82 +206,11 @@ export default function Chat() {
       <div className="mx-auto flex h-full min-h-0 max-w-6xl flex-col">
 
         {/* Page title */}
-        <div className="mb-4 flex shrink-0 items-center justify-between gap-4">
-          {/* Left: Page title */}
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Community Chat
-            </h1>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Connect and chat with other users in real time.
-            </p>
-          </div>
-
-          {/* Right: User actions */}
-          <div className="flex shrink-0 items-center gap-2">
-
-            {/* Profile */}
-            <button
-              type="button"
-              onClick={() => navigate("/profile")}
-              className="flex items-center gap-2 rounded-xl px-2 py-2 transition hover:bg-slate-100 sm:px-3"
-            >
-              <UserCircle
-                size={22}
-                className="text-slate-500"
-              />
-
-              <div className="hidden text-left sm:block">
-                <p className="text-sm font-semibold text-slate-800">
-                  {currentUser.name || "User"}
-                </p>
-
-                <p className="text-[11px] text-slate-400">
-                  Edit profile
-                </p>
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div className="h-7 w-px bg-slate-200" />
-            {isAdmin &&
-              <button
-                type="button"
-                onClick={() => navigate("/admin")}
-                className="flex items-center gap-2 rounded-xl px-2 py-2 transition hover:bg-slate-100 sm:px-3"
-              >
-                <UserCircle
-                  size={22}
-                  className="text-slate-500"
-                />
-
-                <div className="hidden text-left sm:block">
-                  <p className="text-sm font-semibold text-slate-800">
-                    {"Admin"}
-                  </p>
-
-                </div>
-              </button>
-            }
-            {/* Divider */}
-            <div className="h-7 w-px bg-slate-200" />
-
-            {/* Logout */}
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600 sm:px-3"
-              title="Logout"
-            >
-              <LogOut size={18} />
-
-              <span className="hidden sm:inline">
-                Logout
-              </span>
-            </button>
-          </div>
-        </div>
+        <ChatPageHeader
+          title="Chat"
+          subtitle={`Your conversation with Chat`}
+          showBackButton
+        />
 
         {/* Chat */}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">

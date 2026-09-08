@@ -7,3 +7,21 @@ export const socket = io(
 
   }
 );
+
+export function connectSocket(
+  token: string
+) {
+  socket.auth = {
+    token,
+  };
+
+  if (!socket.connected) {
+    socket.connect();
+  }
+}
+
+export function disconnectSocket() {
+  if (socket.connected) {
+    socket.disconnect();
+  }
+}

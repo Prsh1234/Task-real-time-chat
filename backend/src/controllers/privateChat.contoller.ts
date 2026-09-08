@@ -1,44 +1,30 @@
-import { Request, Response } from "express";
+import type {
+  RequestHandler,
+} from "express";
 
-import PrivateMessage from "../models/PrivateMessage";
+import PrivateMessage from "../models/PrivateMessage.js";
 
 import {
   getCachedPrivateMessages,
   cachePrivateMessages,
-} from "../services/privateMessageCache";
+} from "../services/privateMessageCache.js";
 
-interface AuthenticatedRequest
-  extends Request {
-  user: {
-    id: string;
-    name?: string;
-    role?: string;
-  };
+interface PrivateMessageParams {
+  userId: string;
 }
 
-/**
- * GET
- *
- * /api/private/messages/:userId
- *
- * Query:
- *
- * ?limit=20
- *
- * or:
- *
- * ?limit=20&before=2026-09-07T10:30:00.000Z
- */
-export async function getPrivateMessages(
-  req: Request,
-  res: Response
-) {
+export const getPrivateMessages: RequestHandler<
+  PrivateMessageParams
+> = async (req, res) => {
   try {
-    const authenticatedRequest =
-      req as AuthenticatedRequest;
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      });
+    }
 
     const currentUserId =
-      authenticatedRequest.user.id;
+      req.user._id.toString();
 
     const otherUserId =
       req.params.userId;
@@ -53,27 +39,19 @@ export async function getPrivateMessages(
         ? req.query.before
         : undefined;
 
-    /*
-     * ========================================
-     * 1. CHECK REDIS
-     * ========================================
-     */
-
     const cachedMessages =
       await getCachedPrivateMessages(
         currentUserId,
         otherUserId,
-        before
-          ? new Date(before)
-          : undefined,
+        before,
         limit
       );
 
-    /*
-     * If Redis has enough messages,
-     * return immediately.
-     */
-    if (cachedMessages.length === limit) {
+    if (
+      cachedMessages.length === limit
+    ) {
+        console.log(`[messages] source=redis user=${currentUserId} other=${otherUserId} count=${cachedMessages.length}`);
+
       return res.json({
         source: "redis",
         messages: cachedMessages,
@@ -81,15 +59,7 @@ export async function getPrivateMessages(
       });
     }
 
-    /*
-     * ========================================
-     * 2. REDIS DOES NOT HAVE ENOUGH DATA
-     * ========================================
-     *
-     * Query MongoDB.
-     */
-
-    const query: any = {
+    const query = {
       $or: [
         {
           sender: currentUserId,
@@ -100,23 +70,15 @@ export async function getPrivateMessages(
           receiver: currentUserId,
         },
       ],
+      ...(before
+        ? {
+            createdAt: {
+              $lt: new Date(before),
+            },
+          }
+        : {}),
     };
 
-    /*
-     * For older messages:
-     *
-     * createdAt < oldestLoadedMessage
-     */
-    if (before) {
-      query.createdAt = {
-        $lt: new Date(before),
-      };
-    }
-
-    /*
-     * Get one extra message so we can
-     * determine hasMore.
-     */
     const mongoMessages =
       await PrivateMessage.find(query)
         .sort({
@@ -132,31 +94,15 @@ export async function getPrivateMessages(
       mongoMessages.pop();
     }
 
-    /*
-     * MongoDB returned newest → oldest.
-     *
-     * Reverse it before sending to React.
-     */
     const messages =
       mongoMessages.reverse();
-
-    /*
-     * ========================================
-     * 3. ADD MONGODB RESULTS TO REDIS
-     * ========================================
-     */
 
     await cachePrivateMessages(
       currentUserId,
       otherUserId,
       messages
     );
-
-    /*
-     * ========================================
-     * 4. RETURN
-     * ========================================
-     */
+console.log(`[messages] source=mongodb user=${currentUserId} other=${otherUserId} count=${messages.length}`);
 
     return res.json({
       source: "mongodb",
@@ -174,4 +120,20 @@ export async function getPrivateMessages(
         "Failed to retrieve private messages",
     });
   }
-}
+};
+
+
+// 1) "private_chat:6a9cfdd6cfdbc1b6fc93cf49_6a9e7cd39804963769f40427"
+// 2) "private_chat:6a8d8bdad03ef477d85e2e2e_6a8da147451dfc9c97baed00"
+// 3) "private_chat:6a8da147451dfc9c97baed00_6a9cfdd6cfdbc1b6fc93cf49"
+// 4) "private_chat:6a8d7d68777b181736afb055_6a8da147451dfc9c97baed00"
+// 5) "private_chat:6a8da147451dfc9c97baed00_6a9e7cd39804963769f40427"
+// 6) "private_chat:6a8d7d68777b181736afb055_6a9cfdd6cfdbc1b6fc93cf49"
+
+
+// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a9cfdd6cfdbc1b6fc93cf49_6a9e7cd39804963769f40427" 0 -1 WITHSCORES
+// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a8d8bdad03ef477d85e2e2e_6a8da147451dfc9c97baed00" 0 -1 WITHSCORES
+// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a8da147451dfc9c97baed00_6a9cfdd6cfdbc1b6fc93cf49" 0 -1 WITHSCORES
+// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a8d7d68777b181736afb055_6a8da147451dfc9c97baed00" 0 -1 WITHSCORES
+// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a8da147451dfc9c97baed00_6a9e7cd39804963769f40427" 0 -1 WITHSCORES
+// docker exec -it chat-redis redis-cli ZRANGE "private_chat:6a8d7d68777b181736afb055_6a9cfdd6cfdbc1b6fc93cf49" 0 -1 WITHSCORES

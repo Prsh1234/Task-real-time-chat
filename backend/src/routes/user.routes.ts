@@ -4,7 +4,8 @@ import {
   getUsers,
   deleteUser,
   updateCurrentUser,
-  getCurrentUser
+  getCurrentUser,
+  getUser
 } from "../controllers/user.controller.js";
 
 import {
@@ -26,6 +27,13 @@ router.get(
   authenticate,
   getUsers
 );
+
+router.get(
+  "/:id",
+  authenticate,
+  getUser
+);
+
 
 
 router.put(
