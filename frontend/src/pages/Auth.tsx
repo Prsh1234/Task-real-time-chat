@@ -97,12 +97,12 @@ export default function Auth() {
 
         setMessage("Login successful!");
         setMessageType("success");
-    if (response.data.user.role === "admin") {
-      navigate("/admin");
-      return;
-    }
+        if (response.data.user.role === "admin") {
+          navigate("/admin");
+          return;
+        }
 
-    navigate("/home");
+        navigate("/home");
       } else {
         await api.post("/auth/register", {
           name: form.name,
@@ -126,8 +126,8 @@ export default function Auth() {
     } catch (error: any) {
       setMessage(
         error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Something went wrong"
+        error.response?.data?.error ||
+        "Something went wrong"
       );
 
       setMessageType("error");
@@ -184,11 +184,10 @@ export default function Auth() {
             <button
               type="button"
               onClick={() => switchTab("signin")}
-              className={`rounded-md py-2 text-sm font-medium transition ${
-                tab === "signin"
+              className={`rounded-md py-2 text-sm font-medium transition ${tab === "signin"
                   ? "bg-white text-gray-900 shadow-sm"
                   : "text-gray-500 hover:text-gray-900"
-              }`}
+                }`}
             >
               Sign In
             </button>
@@ -196,11 +195,10 @@ export default function Auth() {
             <button
               type="button"
               onClick={() => switchTab("signup")}
-              className={`rounded-md py-2 text-sm font-medium transition ${
-                tab === "signup"
+              className={`rounded-md py-2 text-sm font-medium transition ${tab === "signup"
                   ? "bg-white text-gray-900 shadow-sm"
                   : "text-gray-500 hover:text-gray-900"
-              }`}
+                }`}
             >
               Sign Up
             </button>
@@ -209,11 +207,10 @@ export default function Auth() {
           {/* Message */}
           {message && (
             <div
-              className={`mb-4 rounded-lg border p-3 text-sm ${
-                messageType === "success"
+              className={`mb-4 rounded-lg border p-3 text-sm ${messageType === "success"
                   ? "border-green-200 bg-green-50 text-green-700"
                   : "border-red-200 bg-red-50 text-red-700"
-              }`}
+                }`}
             >
               {message}
             </div>
@@ -248,11 +245,10 @@ export default function Auth() {
                   }
                   maxLength={80}
                   autoComplete="name"
-                  className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 ${
-                    errors.name
+                  className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 ${errors.name
                       ? "border-red-500"
                       : "border-gray-300"
-                  }`}
+                    }`}
                 />
 
                 {errors.name && (
@@ -285,11 +281,10 @@ export default function Auth() {
                 }
                 maxLength={255}
                 autoComplete="email"
-                className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 ${
-                  errors.email
+                className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 ${errors.email
                     ? "border-red-500"
                     : "border-gray-300"
-                }`}
+                  }`}
               />
 
               {errors.email && (
@@ -324,11 +319,10 @@ export default function Auth() {
                     ? "current-password"
                     : "new-password"
                 }
-                className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 ${
-                  errors.password
+                className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 ${errors.password
                     ? "border-red-500"
                     : "border-gray-300"
-                }`}
+                  }`}
               />
 
               {errors.password && (
@@ -347,8 +341,8 @@ export default function Auth() {
               {loading
                 ? "Please wait..."
                 : tab === "signin"
-                ? "Sign In"
-                : "Create Account"}
+                  ? "Sign In"
+                  : "Create Account"}
             </button>
 
           </form>

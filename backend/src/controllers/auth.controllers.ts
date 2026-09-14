@@ -55,10 +55,10 @@ export const login = async (
 ) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email });
 
     if (!user) {
+      console.log("a",user)
       return res.status(401).json({
         message: "Invalid email or password"
       });
@@ -70,7 +70,10 @@ export const login = async (
     );
 
     if (!validPassword) {
+            console.log("b",user)
+
       return res.status(401).json({
+        
         message: "Invalid email or password"
       });
     }
@@ -84,6 +87,7 @@ export const login = async (
         expiresIn: "1d"
       }
     );
+      console.log("c",user)
 
     return res.json({
       token,

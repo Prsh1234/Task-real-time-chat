@@ -5,9 +5,10 @@ import type {
 import PrivateMessage from "../models/PrivateMessage.js";
 
 import {
-  getCachedPrivateMessages,
-  cachePrivateMessages,
-} from "../services/privateMessageCache.js";
+  getCachedMessages,
+  cacheMessages,
+} from "../services/messageCache.js";
+import getPrivateChatKey from "../utils/privateChatKey.js";
 
 interface PrivateMessageParams {
   userId: string;
@@ -39,10 +40,14 @@ export const getPrivateMessages: RequestHandler<
         ? req.query.before
         : undefined;
 
-    const cachedMessages =
-      await getCachedPrivateMessages(
+    const key =
+      getPrivateChatKey(
         currentUserId,
-        otherUserId,
+        otherUserId
+      );
+    const cachedMessages =
+      await getCachedMessages(
+        key,
         before,
         limit
       );
@@ -50,7 +55,7 @@ export const getPrivateMessages: RequestHandler<
     if (
       cachedMessages.length === limit
     ) {
-        console.log(`[messages] source=redis user=${currentUserId} other=${otherUserId} count=${cachedMessages.length}`);
+      console.log(`[messages] source=redis user=${currentUserId} other=${otherUserId} count=${cachedMessages.length}`);
 
       return res.json({
         source: "redis",
@@ -72,10 +77,10 @@ export const getPrivateMessages: RequestHandler<
       ],
       ...(before
         ? {
-            createdAt: {
-              $lt: new Date(before),
-            },
-          }
+          createdAt: {
+            $lt: new Date(before),
+          },
+        }
         : {}),
     };
 
@@ -97,12 +102,11 @@ export const getPrivateMessages: RequestHandler<
     const messages =
       mongoMessages.reverse();
 
-    await cachePrivateMessages(
-      currentUserId,
-      otherUserId,
+    await cacheMessages(
+      key,
       messages
     );
-console.log(`[messages] source=mongodb user=${currentUserId} other=${otherUserId} count=${messages.length}`);
+    console.log(`[messages] source=mongodb user=${currentUserId} other=${otherUserId} count=${messages.length}`);
 
     return res.json({
       source: "mongodb",

@@ -85,6 +85,7 @@ useEffect(() => {
 
   getUserById(otherUserId)
     .then((user) => {
+      console.log(user)
       if (!cancelled) {
         setOtherUserName(user.name);
       }
