@@ -4,7 +4,6 @@ import { model, Schema } from "mongoose";
 export interface IGroupChat extends Document {
     owner: mongoose.Types.ObjectId;
     members: mongoose.Types.ObjectId[];
-    messages: mongoose.Types.ObjectId[];
     groupName: string;
     createdAt: Date;
     updatedAt: Date;
@@ -29,13 +28,6 @@ const GroupChatSchema = new Schema<IGroupChat>(
                 type: Schema.Types.ObjectId,
                 ref: "User",
                 required: true,
-            },
-        ],
-
-        messages: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: "GroupMessage",
             },
         ],
     },
