@@ -2,6 +2,7 @@ import { Server, Socket } from "socket.io";
 
 import User from "../models/User.js";
 import Message from "../models/Message.js";
+import { cacheMessages } from "../services/messageCache.js";
 
 interface SocketUser {
   id: string;
@@ -53,7 +54,10 @@ export const initializeCommunitySocket = (
           message: savedMessage.message,
           createdAt: savedMessage.createdAt,
         };
-
+        await cacheMessages(
+          "community_chat",
+          [formattedMessage]
+        );
         io.emit(
           "message",
           formattedMessage

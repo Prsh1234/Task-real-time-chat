@@ -85,7 +85,7 @@ const UserList = () => {
                         <button
                             type="button"
                             onClick={() => navigate("/groupList")}
-                            className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 sm:px-3"
+                            className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 sm:px-3 cursor-pointer"
                             title="Group Chat"
                         >
                             <MessageCircle size={18} />
@@ -103,7 +103,7 @@ const UserList = () => {
                         <button
                             type="button"
                             onClick={() => navigate("/chat")}
-                            className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 sm:px-3"
+                            className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 sm:px-3 cursor-pointer"
                             title="Community Chat"
                         >
                             <MessageCircle size={18} />
@@ -127,7 +127,7 @@ const UserList = () => {
                                 className="text-slate-500"
                             />
 
-                            <div className="hidden text-left sm:block">
+                            <div className="hidden text-left sm:block cursor-pointer">
                                 <p className="text-sm font-semibold text-slate-800">
                                     {currentUser.name || "Admin"}
                                 </p>
@@ -145,7 +145,7 @@ const UserList = () => {
                         <button
                             type="button"
                             onClick={handleLogout}
-                            className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600 sm:px-3"
+                            className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600 sm:px-3 cursor-pointer"
                             title="Logout"
                         >
                             <LogOut size={18} />

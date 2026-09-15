@@ -3,7 +3,7 @@ import { Router } from "express";
 import {
   getMessages,
   getChatStats
-} from "../controllers/chat.controller.js";
+} from "../controllers/communityChat.controller.js";
 
 import {
   authenticate

@@ -21,6 +21,9 @@ import "react-toastify/dist/ReactToastify.css";
 export default function App() {
   useEffect(() => {
     const token = localStorage.getItem("token");
+    if(!token){
+      navigate("/");
+    }
 
     if (token) {
       connectSocket(token);

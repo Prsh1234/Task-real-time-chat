@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  LogOut,
   MessageCircle,
-  UserCircle,
   Users,
   Wifi,
   WifiOff,
@@ -15,7 +13,6 @@ import MessageList from "../components/MessageList";
 import ChatInput from "../components/ChatInput";
 
 import type { Message, ChatStats } from "../types";
-import { useNavigate } from "react-router-dom";
 import ChatPageHeader from "../components/ChatPageHeader";
 
 export default function Chat() {
@@ -27,20 +24,8 @@ export default function Chat() {
     id: string;
     name: string;
   } | null>(null);
-  const navigate = useNavigate();
-  const handleLogout = () => {
-    socket.disconnect();
 
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
 
-    navigate("/");
-  };
-  const currentUser = JSON.parse(
-    localStorage.getItem("user") || "{}"
-  );
-  const role = currentUser.role;
-  const isAdmin = role == "admin" ? true : false;
 
   const [stats, setStats] = useState<ChatStats>({
     totalUsers: 0,
