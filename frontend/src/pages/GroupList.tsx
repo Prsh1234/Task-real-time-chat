@@ -1,9 +1,9 @@
 import { Loader2, LogOut, MessageCircle, UserCircle, Users, X } from "lucide-react";
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
-import { getGroupChats, type GroupChat } from "../services/groupMessageApi";
+import { type GroupChat } from "../services/groupMessageApi";
 import GroupInvitations from "./GroupInvitations";
+import { socket } from "../services/socket";
 
 export default function GroupList() {
     const [groupName, setGroupName] = useState("");
@@ -34,23 +34,37 @@ export default function GroupList() {
             return;
         }
 
-        console.log("Creating group:", groupName);
         try {
-            const response = await api.post("/groupChat/create", {
-                groupName: groupName
-            });
-            console.log(response.data.message)
+            socket.emit(
+                "group/create",
+                {
+                    groupName: groupName.trim(),
+                },
+                (response: {
+                    success: boolean;
+                    message: string;
+                    group?: GroupChat;
+                }) => {
+                    if (response.success && response.group) {
+                        setGroupChats((previous) => [
+                            ...previous,
+                            response.group!,
+                        ]);
+
+                        setGroupName("");
+                        setShowCreateGroup(false);
+                    } else {
+                        setMessage(response.message);
+                    }
+                }
+            );
         } catch (error: any) {
             setMessage(
                 error.response?.data?.message ||
                 error.response?.data?.error ||
                 "Something went wrong"
             );
-
-        } finally {
-
         }
-
 
         setGroupName("");
         setShowCreateGroup(false);
@@ -61,26 +75,30 @@ export default function GroupList() {
         setShowCreateGroup(false);
     };
 
-    const loadGroups = async () => {
-        try {
-            setLoading(true);
-            setError("");
+    const loadGroups = () => {
+        socket.emit(
+            "groups/get",
+            (response: {
+                success: boolean;
+                message: string;
+                groups?: GroupChat[];
+            }) => {
+                if (response.success) {
+                    setGroupChats(response.groups || []);
+                } else {
+                    setError(response.message);
+                }
 
-            const data = await getGroupChats();
-
-            setGroupChats(data);
-        } catch (error: any) {
-            console.error(error);
-
-            setError(
-                error?.response?.data?.message ||
-                "Failed to load users"
-            );
-        } finally {
-            setLoading(false);
-        }
+                setLoading(false);
+            }
+        );
     };
-
+    const handleGroupJoined = (group: GroupChat) => {
+        setGroupChats((previous) => [
+            ...previous,
+            group,
+        ]);
+    };
     useEffect(() => {
         loadGroups();
     }, []);
@@ -208,8 +226,9 @@ export default function GroupList() {
                     </div>
 
                     {/* Invitations */}
-                    <GroupInvitations />
-
+                    <GroupInvitations
+                        onGroupJoined={handleGroupJoined}
+                    />
                     {/* Error */}
                     {error && (
                         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

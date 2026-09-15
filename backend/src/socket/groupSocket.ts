@@ -20,54 +20,135 @@ export const initializeGroupSocket = (
   socket: Socket
 ) => {
   const user = socket.data.user as SocketUser;
+  /*
+   * ==========================================
+   * GET Group CHAT
+   * ==========================================
+   */
+  socket.on(
+    "groups/get",
+    async (
+      callback: (response: {
+        success: boolean;
+        message: string;
+        groups?: unknown[];
+      }) => void
+    ) => {
+      try {
+        const userId = socket.data.user.id;
 
+        const groups = await GroupChat.find({
+          members: userId,
+        })
+          .select("owner groupName")
+          .populate("owner", "name");
+
+        callback({
+          success: true,
+          message: "Groups fetched successfully",
+          groups,
+        });
+      } catch (error) {
+        console.error(error);
+
+        callback({
+          success: false,
+          message: "Failed to fetch groups",
+        });
+      }
+    }
+  );
+
+
+  socket.on(
+    "group/create",
+    async (
+      { groupName },
+      callback
+    ) => {
+      try {
+        const userId = socket.data.user.id;
+
+        if (!groupName?.trim()) {
+          return callback({
+            success: false,
+            message: "Group name is required",
+          });
+        }
+
+        const group = await GroupChat.create({
+          groupName: groupName.trim(),
+          owner: userId,
+          members: [userId],
+        });
+
+        const populatedGroup =
+          await GroupChat.findById(group._id)
+            .select("owner groupName")
+            .populate("owner", "name");
+
+        callback({
+          success: true,
+          message: "Group created successfully",
+          group: populatedGroup,
+        });
+      } catch (error) {
+        console.error(error);
+
+        callback({
+          success: false,
+          message: "Failed to create group",
+        });
+      }
+    }
+  );
   /*
    * ==========================================
    * JOIN Group CHAT
    * ==========================================
    */
 
-socket.on("join_group_chat", async (groupId: string) => {
+  socket.on("join_group_chat", async (groupId: string) => {
     try {
-        const user = socket.data.user;
+      const user = socket.data.user;
 
-        if (!user?.id) {
-            return;
-        }
+      if (!user?.id) {
+        return;
+      }
 
-        const group = await GroupChat.findById(groupId)
-            .select("members");
+      const group = await GroupChat.findById(groupId)
+        .select("members");
 
-        if (!group) {
-            socket.emit("group_error", {
-                message: "Group not found",
-            });
-            return;
-        }
+      if (!group) {
+        socket.emit("group_error", {
+          message: "Group not found",
+        });
+        return;
+      }
 
-        const isMember = group.members.some(
-            (member) =>
-                member.toString() === user.id
-        );
+      const isMember = group.members.some(
+        (member) =>
+          member.toString() === user.id
+      );
 
-        if (!isMember) {
-            socket.emit("group_error", {
-                message: "You are not a member of this group",
-            });
+      if (!isMember) {
+        socket.emit("group_error", {
+          message: "You are not a member of this group",
+        });
 
-            return;
-        }
+        return;
+      }
 
-        socket.join(`group_chat:${groupId}`);
+      socket.join(`group_chat:${groupId}`);
 
     } catch (error) {
-        console.error("Join group error:", error);
+      console.error("Join group error:", error);
 
-        socket.emit("group_error", {
-            message: "Failed to join group",
-        });
+      socket.emit("group_error", {
+        message: "Failed to join group",
+      });
     }
-});
+  });
 
 
   /*

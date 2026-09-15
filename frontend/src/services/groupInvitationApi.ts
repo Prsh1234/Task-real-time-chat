@@ -37,19 +37,7 @@ export const searchGroupUsers = async (
     return response.data.users as GroupUser[];
 };
 
-export const inviteUserToGroup = async (
-    groupId: string,
-    userId: string
-) => {
-    const response = await api.post(
-        `/groupChat/${groupId}/invitations`,
-        {
-            userId,
-        }
-    );
 
-    return response.data;
-};
 
 export const getMyGroupInvitations = async () => {
     const response = await api.get(

@@ -1,43 +1,55 @@
 import { useEffect, useState } from "react";
 
 import {
-    acceptGroupInvitation,
-    declineGroupInvitation,
-    getMyGroupInvitations,
     type GroupInvitation,
 } from "../services/groupInvitationApi";
+import { socket } from "../services/socket";
+import type { GroupChat } from "../services/groupMessageApi";
 
-export default function GroupInvitations() {
+interface GroupInvitationsProps {
+    onGroupJoined: (group: GroupChat) => void;
+}
+
+export default function GroupInvitations({
+    onGroupJoined,
+}: GroupInvitationsProps) {
     const [invitations, setInvitations] =
         useState<GroupInvitation[]>([]);
 
     useEffect(() => {
-    loadInvitations();
-
-    const handleNewInvitation = () => {
         loadInvitations();
-        console.log("ASdf")
-    };
 
-    window.addEventListener(
-        "group-invitation-received",
-        handleNewInvitation
-    );
+        const handleNewInvitation = () => {
+            loadInvitations();
+        };
 
-    return () => {
-        window.removeEventListener(
-            "group-invitation-received",
+        socket.on(
+            "group_invitation",
             handleNewInvitation
         );
-    };
-}, []);
+
+        return () => {
+            socket.off(
+                "group_invitation",
+                handleNewInvitation
+            );
+        };
+    }, []);
+
 
     const loadInvitations = async () => {
         try {
-            const result =
-                await getMyGroupInvitations();
+            socket.emit("invitations/get", 
+                (response:{
+                 success: boolean, 
+                 message: string, 
+                 invitations: GroupInvitation[] 
+                }) => {
+                if (response.success) {
+                    setInvitations(response.invitations || []);
+                } 
+            });
 
-            setInvitations(result);
         } catch (error) {
             console.error(error);
         }
@@ -47,17 +59,28 @@ export default function GroupInvitations() {
         invitationId: string
     ) => {
         try {
-            await acceptGroupInvitation(
-                invitationId
-            );
+            socket.emit("invitation/accept",
+                {
+                    invitationId
+                },
+                (response: {
+                    success: boolean,
+                    message: string,
+                    group: GroupChat
+                }) => {
+                    if (response.success) {
+                        setInvitations((previous) =>
+                            previous.filter(
+                                (item) => item._id !== invitationId
+                            )
+                        );
 
-            setInvitations((previous) =>
-                previous.filter(
-                    (item) =>
-                        item._id !== invitationId
-                )
-            );
-
+                        if (response.group) {
+                            onGroupJoined(response.group);
+                        }
+                    }
+                }
+            )
         } catch (error) {
             console.error(error);
         }
@@ -67,16 +90,24 @@ export default function GroupInvitations() {
         invitationId: string
     ) => {
         try {
-            await declineGroupInvitation(
-                invitationId
-            );
-
-            setInvitations((previous) =>
-                previous.filter(
-                    (item) =>
-                        item._id !== invitationId
-                )
-            );
+            socket.emit("invitation/decline",
+                {
+                    invitationId
+                },
+                (response: {
+                    success: boolean,
+                    message: string
+                }) => {
+                    if (response.success) {
+                        setInvitations((previous) =>
+                            previous.filter(
+                                (item) =>
+                                    item._id !== invitationId
+                            )
+                        );
+                    }
+                }
+            )
 
         } catch (error) {
             console.error(error);

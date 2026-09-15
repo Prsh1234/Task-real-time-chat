@@ -32,8 +32,9 @@ export default function Chat() {
     totalMessages: 0,
   });
 
-  const [status, setStatus] = useState("Connecting...");
-
+const [status, setStatus] = useState(
+  socket.connected ? "Connected" : "Connecting..."
+);
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -112,7 +113,6 @@ export default function Chat() {
       socket.off("user_typing");
       socket.off("user_stop_typing");
       socket.off("stats_update");
-      socket.disconnect();
     };
   }, []);
   const handleTyping = (isTyping: boolean) => {

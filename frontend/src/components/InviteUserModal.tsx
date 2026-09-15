@@ -10,10 +10,10 @@ import {
 } from "lucide-react";
 
 import {
-    inviteUserToGroup,
     searchGroupUsers,
     type GroupUser,
 } from "../services/groupInvitationApi";
+import { socket } from "../services/socket";
 
 interface InviteUserModalProps {
     groupId: string;
@@ -75,42 +75,35 @@ export default function InviteUserModal({
         };
     }, [groupId, query]);
 
-    const handleInvite = async (
-        userId: string
-    ) => {
-        try {
-            setInvitingUserId(userId);
+    const handleInvite = (userId: string) => {
+        setInvitingUserId(userId);
+        setMessage(null);
 
-            await inviteUserToGroup(
+        socket.emit(
+            "invitation",
+            {
                 groupId,
-                userId
-            );
+                receiverId: userId,
+            },
+            (response: {
+                success: boolean;
+                message: string;
+            }) => {
+                if (response.success) {
+                    setUsers((previous) =>
+                        previous.filter(
+                            (user) =>
+                                user._id !== userId
+                        )
+                    );
+                }
 
-            setUsers((previous) =>
-                previous.filter(
-                    (user) =>
-                        user._id !== userId
-                )
-            );
-
-            setMessage(
-                "Invitation sent successfully."
-            );
-
-        } catch (error: any) {
-            console.error(
-                "Failed to invite user:",
-                error
-            );
-
-            setMessage(
-                error?.response?.data?.message ||
-                "Failed to send invitation."
-            );
-        } finally {
-            setInvitingUserId(null);
-        }
+                setMessage(response.message);
+                setInvitingUserId(null);
+            }
+        );
     };
+
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -213,7 +206,7 @@ export default function InviteUserModal({
                                     />
 
                                     {invitingUserId ===
-                                    user._id
+                                        user._id
                                         ? "Sending..."
                                         : "Invite"}
                                 </button>

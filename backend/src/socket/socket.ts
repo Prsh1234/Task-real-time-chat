@@ -13,6 +13,7 @@ import {
 } from "./privateSocket.js";
 import { initializeGroupSocket } from "./groupSocket.js";
 import { setSocketIO } from "./socketInstance.js";
+import { initializeInvitationSocket } from "./invitationSocket.js";
 
 
 interface SocketUser {
@@ -116,6 +117,11 @@ export const initializeSocket = (
     );
 
     initializeGroupSocket(
+      io,
+      socket
+    );
+
+    initializeInvitationSocket(
       io,
       socket
     );
