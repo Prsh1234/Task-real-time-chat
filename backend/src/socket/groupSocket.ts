@@ -58,7 +58,7 @@ socket.on("join_group_chat", async (groupId: string) => {
             return;
         }
 
-        socket.join(`group:${groupId}`);
+        socket.join(`group_chat:${groupId}`);
 
     } catch (error) {
         console.error("Join group error:", error);

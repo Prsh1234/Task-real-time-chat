@@ -13,7 +13,7 @@ import {
 
 
 import { socket } from "../services/socket";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import MessageList from "../components/MessageList";
 import ChatInput from "../components/ChatInput";
@@ -30,10 +30,11 @@ export default function GroupChat() {
      * USER IDS
      * ========================================
      */
-
+    const [accessChecked, setAccessChecked] = useState(false);
     const { groupId } =
         useParams<{ groupId: string }>();
 
+const navigate = useNavigate();
 
     const currentUser = JSON.parse(
         localStorage.getItem("user") || "{}"
@@ -79,22 +80,36 @@ export default function GroupChat() {
         };
     } | null>(null);
 
+
     useEffect(() => {
         if (!groupId) {
             return;
         }
 
         let cancelled = false;
+        setAccessChecked(false);
 
-        getGroupById(groupId)
-            .then((group) => {
-                if (!cancelled) {
-                    setGroup(group);
-                }
-            })
-            .catch((error) => {
-                console.error("Failed to load user:", error);
-            });
+         getGroupById(groupId)
+        .then((group) => {
+            if (!cancelled) {
+                setGroup(group);
+                setAccessChecked(true);
+            }
+        })
+        .catch((error) => {
+            if (cancelled) return;
+
+            if (
+                error.response?.status === 403 ||
+                error.response?.status === 404
+            ) {
+                navigate("/groupList");
+                return;
+            }
+
+            console.error("Failed to load group:", error);
+        });
+
 
         return () => {
             cancelled = true;
@@ -196,7 +211,7 @@ export default function GroupChat() {
      */
 
     useEffect(() => {
-        if (!groupId) {
+        if (!groupId || !accessChecked) {
             return;
         }
 
@@ -208,6 +223,7 @@ export default function GroupChat() {
     }, [
         groupId,
         loadInitialMessages,
+        accessChecked
     ]);
 
 
@@ -218,7 +234,7 @@ export default function GroupChat() {
      */
 
     useEffect(() => {
-        if (!groupId) {
+        if (!groupId || !accessChecked) {
             return;
         }
         const token = localStorage.getItem("token");
@@ -333,6 +349,7 @@ export default function GroupChat() {
     }, [
         currentUserId,
         groupId,
+        accessChecked
     ]);
 
 
@@ -385,6 +402,12 @@ export default function GroupChat() {
      * RENDER
      * ========================================
      */
+    if(!accessChecked){
+        return(
+            <>
+            </>
+        )
+    }
 
     return (
         <div className="h-screen overflow-hidden bg-slate-50 p-4 sm:p-6">
@@ -413,7 +436,7 @@ export default function GroupChat() {
                                 </h2>
                             </div>
                         </div>
-                        
+
                         {/* Right: Connection */}
                         <div
                             className={`flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium ${connected
@@ -430,7 +453,7 @@ export default function GroupChat() {
                             <span className="hidden md:inline">
                                 {status}
                             </span>
-                            
+
                         </div>
                         {isOwner && (
                             <button
