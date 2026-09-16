@@ -34,7 +34,7 @@ export default function GroupChat() {
     const { groupId } =
         useParams<{ groupId: string }>();
 
-const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const currentUser = JSON.parse(
         localStorage.getItem("user") || "{}"
@@ -89,26 +89,26 @@ const navigate = useNavigate();
         let cancelled = false;
         setAccessChecked(false);
 
-         getGroupById(groupId)
-        .then((group) => {
-            if (!cancelled) {
-                setGroup(group);
-                setAccessChecked(true);
-            }
-        })
-        .catch((error) => {
-            if (cancelled) return;
+        getGroupById(groupId)
+            .then((group) => {
+                if (!cancelled) {
+                    setGroup(group);
+                    setAccessChecked(true);
+                }
+            })
+            .catch((error) => {
+                if (cancelled) return;
 
-            if (
-                error.response?.status === 403 ||
-                error.response?.status === 404
-            ) {
-                navigate("/groupList");
-                return;
-            }
+                if (
+                    error.response?.status === 403 ||
+                    error.response?.status === 404
+                ) {
+                    navigate("/groupList");
+                    return;
+                }
 
-            console.error("Failed to load group:", error);
-        });
+                console.error("Failed to load group:", error);
+            });
 
 
         return () => {
@@ -308,7 +308,41 @@ const navigate = useNavigate();
                             : current
                 );
             };
+        const handleGroupJoin = (
+            user: { id: string; name: string; groupId: string }
+        ) => {
+            console.log(`${user.name} joined the chat`)
+            setMessages((prev) => [
+                ...prev,
+                {
+                    _id: crypto.randomUUID(),
+                    sender: user.id,
+                    senderName: user.name,
+                    message: `${user.name} joined the chat`,
+                    group: user.groupId,
+                    createdAt: new Date().toISOString(),
+                    type: "join",
+                },
+            ]);
+        };
 
+        const handleGroupLeave = (
+            user: { id: string; name: string; groupId: string }
+        ) => {
+            console.log(`${user.name} left the chat`)
+            setMessages((prev) => [
+                ...prev,
+                {
+                    _id: crypto.randomUUID(),
+                    sender: user.id,
+                    senderName: user.name,
+                    message: `${user.name} left the chat`,
+                    group: user.groupId,
+                    createdAt: new Date().toISOString(),
+                    type: "leave",
+                },
+            ]);
+        };
         socket.on("connect", joinRoom);
         socket.on("disconnect", handleDisconnect);
         socket.on(
@@ -323,7 +357,8 @@ const navigate = useNavigate();
             "group_stop_typing",
             handleGroupStopTyping
         );
-
+        socket.on("group_join", handleGroupJoin);
+        socket.on("group_leave", handleGroupLeave);
         if (socket.connected) {
             joinRoom();
         }
@@ -343,6 +378,9 @@ const navigate = useNavigate();
                 "group_stop_typing",
                 handleGroupStopTyping
             );
+
+            socket.off("group_join", handleGroupJoin);
+            socket.off("group_leave", handleGroupLeave);
             socket.emit("leave_group_chat", groupId);
         };
 
@@ -404,8 +442,8 @@ const navigate = useNavigate();
      * RENDER
      * ========================================
      */
-    if(!accessChecked){
-        return(
+    if (!accessChecked) {
+        return (
             <>
             </>
         )

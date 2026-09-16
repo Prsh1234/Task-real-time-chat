@@ -17,6 +17,7 @@ export default function GroupList() {
     const [message, setMessage] = useState("");
 
     const handleLogout = () => {
+        socket.disconnect();
         localStorage.removeItem("token");
         localStorage.removeItem("user");
 

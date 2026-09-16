@@ -15,7 +15,6 @@ export interface GroupMessage {
   message: string;
   group:string;
   createdAt: string;
-  updatedAt: string;
 }
 export interface GroupMessagesResponse {
   source: "redis" | "mongodb";

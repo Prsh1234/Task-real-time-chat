@@ -140,7 +140,13 @@ export const initializeGroupSocket = (
       }
 
       socket.join(`group_chat:${groupId}`);
+      const key = getGroupChatKey(groupId);
+      socket.to(key).emit("group_join", {
+        id: user.id,
+        name: user.name,
+        groupId: groupId
 
+      });
     } catch (error) {
       console.error("Join group error:", error);
 
@@ -279,6 +285,11 @@ export const initializeGroupSocket = (
         );
       socket.leave(group);
 
+      socket.to(group).emit("group_leave", {
+        id: user.id,
+        name: user.name,
+        groupId: groupId
+      });
       console.log(
         `${user.name} left group: ${group}`
       );

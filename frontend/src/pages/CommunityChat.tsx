@@ -32,9 +32,9 @@ export default function Chat() {
     totalMessages: 0,
   });
 
-const [status, setStatus] = useState(
-  socket.connected ? "Connected" : "Connecting..."
-);
+  const [status, setStatus] = useState(
+    socket.connected ? "Connected" : "Connecting..."
+  );
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -50,6 +50,12 @@ const [status, setStatus] = useState(
     socket.on("connect", () => {
       setStatus("Connected");
     });
+    const joinCommunity = () => {
+      setStatus("Connected");
+      socket.emit(
+        "join_community"
+      );
+    };
 
     socket.on("disconnect", () => {
       setStatus("Disconnected");
@@ -61,7 +67,10 @@ const [status, setStatus] = useState(
     socket.on("stats_update", (newStats: ChatStats) => {
       setStats(newStats);
     });
-    socket.on("user_join", (user) => {
+    if (socket.connected) {
+      joinCommunity();
+    }
+    socket.on("community_join", (user) => {
       setMessages((prev) => [
         ...prev,
         {
@@ -75,7 +84,7 @@ const [status, setStatus] = useState(
       ]);
     });
 
-    socket.on("user_leave", (user) => {
+    socket.on("community_leave", (user) => {
       setMessages((prev) => [
         ...prev,
         {
@@ -107,12 +116,15 @@ const [status, setStatus] = useState(
     return () => {
       socket.off("connect");
       socket.off("disconnect");
+      socket.off("join_community");
       socket.off("message");
-      socket.off("user_join");
-      socket.off("user_leave");
+      socket.off("community_join");
+      socket.off("community_leave");
       socket.off("user_typing");
       socket.off("user_stop_typing");
       socket.off("stats_update");
+      socket.emit("leave_community");
+
     };
   }, []);
   const handleTyping = (isTyping: boolean) => {

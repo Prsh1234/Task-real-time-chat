@@ -14,6 +14,7 @@ import {
 import { initializeGroupSocket } from "./groupSocket.js";
 import { setSocketIO } from "./socketInstance.js";
 import { initializeInvitationSocket } from "./invitationSocket.js";
+import { addOnlineUser, getOnlineUsers, removeOnlineUser } from "../services/onlineUsersRedis.js";
 
 
 interface SocketUser {
@@ -31,7 +32,7 @@ export const initializeSocket = (
       methods: ["GET", "POST"],
     },
   });
-    setSocketIO(io);
+  setSocketIO(io);
 
   /*
    * ==========================================
@@ -86,7 +87,7 @@ export const initializeSocket = (
    * ==========================================
    */
 
-  io.on("connection", (socket) => {
+  io.on("connection", async (socket) => {
 
     const user =
       socket.data.user as SocketUser;
@@ -94,22 +95,50 @@ export const initializeSocket = (
     console.log(
       `${user.name} connected`
     );
+    /*
+     * ==========================================
+     * USER JOIN
+     * ==========================================
+     */
 
-    socket.join(`user:${user.id}`);
+    // Add user to Redis
+    await addOnlineUser(user.id);
+
+    // Get all currently online users
+    const onlineUsers = await getOnlineUsers();
+
+    io.emit("online_users", onlineUsers);
+
+    socket.on("get_online_users", async () => {
+      const onlineUsers = await getOnlineUsers();
+
+      socket.emit("online_users", onlineUsers);
+    });
 
     /*
-     * Initialize community chat
+     * ==========================================
+     * USER DISCONNECT
+     * ==========================================
      */
+    socket.on("disconnect", async () => {
+      console.log(`${user.name} disconnected`);
+
+      // Remove user from Redis
+      await removeOnlineUser(user.id);
+
+      // Get updated online users
+      const onlineUsers = await getOnlineUsers();
+
+      // Send updated list
+      io.emit("online_users", onlineUsers);
+    });
+
+    socket.join(`user:${user.id}`);
 
     initializeCommunitySocket(
       io,
       socket
     );
-
-
-    /*
-     * Initialize private chat
-     */
 
     initializePrivateSocket(
       io,

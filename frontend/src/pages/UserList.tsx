@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     Users,
     Loader2,
@@ -12,11 +12,12 @@ import {
     getUsers,
     type User,
 } from "../api/user.api";
+import { socket } from "../services/socket";
 
 const UserList = () => {
     const navigate = useNavigate();
-
-    const [users, setUsers] = useState<User[]>([]);
+    const onlineUserIdsRef = useRef<string[]>([]);
+    const [users, setUsers] = useState<(User & { online: boolean })[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -31,7 +32,12 @@ const UserList = () => {
 
             const data = await getUsers();
 
-            setUsers(data);
+            const usersWithStatus = data.map((user) => ({
+                ...user,
+                online: onlineUserIdsRef.current.includes(user._id),
+            }));
+
+            setUsers(usersWithStatus);
         } catch (error: any) {
             console.error(error);
 
@@ -46,11 +52,58 @@ const UserList = () => {
 
     useEffect(() => {
         loadUsers();
+        const handleOnlineUsers = (onlineUserIds: string[]) => {
+            console.log("Online user IDs:", onlineUserIds);
+
+            onlineUserIdsRef.current = onlineUserIds;
+
+            setUsers((prev) =>
+                prev.map((user) => {
+                    const isOnline =
+                        onlineUserIds.includes(user._id);
+
+                    console.log(
+                        "Comparing:",
+                        user._id,
+                        "with",
+                        onlineUserIds,
+                        "=>",
+                        isOnline
+                    );
+
+                    return {
+                        ...user,
+                        online: isOnline,
+                    };
+                })
+            );
+        };
+
+        const handleConnect = () => {
+            socket.emit("get_online_users");
+        };
+
+        socket.on("online_users", handleOnlineUsers);
+        socket.on("connect", handleConnect);
+
+        // Register listeners FIRST, then connect.
+        if (!socket.connected) {
+            socket.connect();
+        } else {
+            // Socket was already connected.
+            socket.emit("get_online_users");
+        }
+
+        return () => {
+            socket.off("online_users", handleOnlineUsers);
+            socket.off("connect", handleConnect);
+        };
     }, []);
 
 
 
     const handleLogout = () => {
+        socket.disconnect();
         localStorage.removeItem("token");
         localStorage.removeItem("user");
 
@@ -222,7 +275,12 @@ const UserList = () => {
                                             </span>
                                         </div>
 
-                                        <div className="min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className={`h-2.5 w-2.5 rounded-full ${user.online ? "bg-green-500" : "bg-slate-300"
+                                                    }`}
+                                            />
+
                                             <p className="truncate text-sm font-semibold text-slate-900">
                                                 {user.name}
                                             </p>

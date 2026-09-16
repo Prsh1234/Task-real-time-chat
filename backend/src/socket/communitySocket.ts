@@ -21,11 +21,20 @@ export const initializeCommunitySocket = (
    * ==========================================
    */
 
-  socket.broadcast.emit("user_join", {
-    id: user.id,
-    name: user.name,
+  socket.on("join_community", () => {
+    socket.broadcast.emit("community_join", {
+      id: user.id,
+      name: user.name,
+    });
   });
-
+  
+  socket.on("leave_community", () => {
+    socket.broadcast.emit("community_leave", {
+      id: user.id,
+      name: user.name,
+    });
+  });
+  
   /*
    * ==========================================
    * COMMUNITY MESSAGE
@@ -107,23 +116,5 @@ export const initializeCommunitySocket = (
     );
   });
 
-  /*
-   * ==========================================
-   * USER DISCONNECT
-   * ==========================================
-   */
 
-  socket.on("disconnect", () => {
-    console.log(
-      `${user.name} disconnected`
-    );
-
-    socket.broadcast.emit(
-      "user_leave",
-      {
-        id: user.id,
-        name: user.name,
-      }
-    );
-  });
 };

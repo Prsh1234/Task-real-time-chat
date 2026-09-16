@@ -14,6 +14,7 @@ import {
   deleteUser,
   type User,
 } from "../api/user.api";
+import { socket } from "../services/socket";
 
 const AdminUsers = () => {
   const navigate = useNavigate();
@@ -87,6 +88,7 @@ const AdminUsers = () => {
   };
 
   const handleLogout = () => {
+    socket.disconnect();
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 

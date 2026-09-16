@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import type { SubmitEvent } from "react";
 import { z } from "zod";
 import api from "../services/api";
+import { socket } from "../services/socket";
 
 const signInSchema = z.object({
   email: z
@@ -89,11 +90,11 @@ export default function Auth() {
           "token",
           response.data.token
         );
-
         localStorage.setItem(
           "user",
           JSON.stringify(response.data.user)
         );
+        socket.connect();
 
         setMessage("Login successful!");
         setMessageType("success");
